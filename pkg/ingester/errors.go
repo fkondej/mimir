@@ -26,18 +26,18 @@ type validationError struct {
 }
 
 func makeLimitError(limiter *Limiter, userID string, err error) error {
-	return &validationError{
+	return limiter.sampler.WrapError(&validationError{
 		err:  limiter.FormatError(userID, err),
 		code: http.StatusBadRequest,
-	}
+	})
 }
 
 func makeMetricLimitError(limiter *Limiter, userID string, labels labels.Labels, err error) error {
-	return &validationError{
+	return limiter.sampler.WrapError(&validationError{
 		err:    limiter.FormatError(userID, err),
 		code:   http.StatusBadRequest,
 		labels: labels,
-	}
+	})
 }
 
 func (e *validationError) Error() string {
