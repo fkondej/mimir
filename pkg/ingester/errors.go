@@ -25,16 +25,16 @@ type validationError struct {
 	labels labels.Labels
 }
 
-func makeLimitError(err error) error {
+func makeLimitError(limiter *Limiter, userID string, err error) error {
 	return &validationError{
-		err:  err,
+		err:  limiter.FormatError(userID, err),
 		code: http.StatusBadRequest,
 	}
 }
 
-func makeMetricLimitError(labels labels.Labels, err error) error {
+func makeMetricLimitError(limiter *Limiter, userID string, labels labels.Labels, err error) error {
 	return &validationError{
-		err:    err,
+		err:    limiter.FormatError(userID, err),
 		code:   http.StatusBadRequest,
 		labels: labels,
 	}

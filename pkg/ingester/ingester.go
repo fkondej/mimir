@@ -944,14 +944,14 @@ func (i *Ingester) pushSamplesToAppender(userID string, timeseries []mimirpb.Pre
 		case errMaxSeriesPerUserLimitExceeded:
 			stats.perUserSeriesLimitCount++
 			updateFirstPartial(func() error {
-				return makeLimitError(i.limiter.FormatError(userID, cause))
+				return makeLimitError(i.limiter, userID, cause)
 			})
 			return true
 
 		case errMaxSeriesPerMetricLimitExceeded:
 			stats.perMetricSeriesLimitCount++
 			updateFirstPartial(func() error {
-				return makeMetricLimitError(mimirpb.FromLabelAdaptersToLabelsWithCopy(labels), i.limiter.FormatError(userID, cause))
+				return makeMetricLimitError(i.limiter, userID, mimirpb.FromLabelAdaptersToLabelsWithCopy(labels), cause)
 			})
 			return true
 		}
