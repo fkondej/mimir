@@ -11,6 +11,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/httptrace"
 	"strings"
 	"testing"
 	"time"
@@ -23,7 +24,6 @@ import (
 	"github.com/grafana/dskit/services"
 	"github.com/grafana/dskit/tracing"
 	"github.com/grafana/dskit/user"
-	"github.com/opentracing-contrib/go-stdlib/nethttp"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/testutil"
@@ -40,6 +40,7 @@ import (
 	"github.com/grafana/mimir/pkg/frontend/v1/frontendv1pb"
 	querier_worker "github.com/grafana/mimir/pkg/querier/worker"
 	"github.com/grafana/mimir/pkg/scheduler/queue"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 )
 
 const (
@@ -98,12 +99,15 @@ func TestFrontendPropagateTrace(t *testing.T) {
 		err = user.InjectOrgIDIntoHTTPRequest(user.InjectOrgID(ctx, "1"), req)
 		require.NoError(t, err)
 
-		req, tr := nethttp.TraceRequest(otel.Tracer("github.com/grafana/mimir"), req)
-		defer tr.Finish()
-
 		client := http.Client{
-			Transport: &otelhttp.Transport{},
+			Transport: otelhttp.NewTransport(
+				http.DefaultTransport,
+				otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+					return otelhttptrace.NewClientTrace(ctx)
+				}),
+			),
 		}
+
 		resp, err := client.Do(req)
 		require.NoError(t, err)
 		require.Equal(t, 200, resp.StatusCode)
