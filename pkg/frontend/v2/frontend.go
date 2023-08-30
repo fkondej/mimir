@@ -194,10 +194,9 @@ func (f *Frontend) RoundTripGRPC(ctx context.Context, req *httpgrpc.HTTPRequest)
 	// Propagate trace context in gRPC too - this will be ignored if using HTTP.
 	tracer, span := otel.Tracer("github.com/grafana/mimir"), trace.SpanFromContext(ctx)
 	if tracer != nil && span != nil {
+		propagators := otel.GetTextMapPropagator()
 		carrier := (*httpgrpcutil.HttpgrpcHeadersCarrier)(req)
-		if err := tracer.Inject(span.Context(), opentracing.HTTPHeaders, carrier); err != nil {
-			return nil, err
-		}
+		propagators.Inject(ctx, carrier)
 	}
 
 	ctx, cancel := context.WithCancel(ctx)
