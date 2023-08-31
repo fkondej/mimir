@@ -9,3 +9,6 @@ CGO_ENABLED=0 go build \
     -tags netgo \
     -o ./dist/mimir \
     ./cmd/mimir
+
+echo "Created: ./dist/mimir"
+./dist/mimir --version
