@@ -368,6 +368,13 @@ check-license: ## Check license header of files.
 check-license: license
 	@git diff --exit-code || (echo "Please add the license header running 'make BUILD_IN_CONTAINER=false license'" && false)
 
+dist-one:
+	echo "Cleaning up dist/"
+	@rm -fr ./dist
+	@mkdir -p ./dist
+	echo "Building Mimir"; \
+	CGO_ENABLED=0 go build $(GO_FLAGS) -o ./dist/mimir ./cmd/mimir;
+
 dist: ## Generates binaries for a Mimir release.
 	echo "Cleaning up dist/"
 	@rm -fr ./dist
