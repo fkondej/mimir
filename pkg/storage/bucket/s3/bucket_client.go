@@ -58,6 +58,9 @@ func newS3Config(cfg Config) (s3.Config, error) {
 		Insecure:        cfg.Insecure,
 		PutUserMetadata: putUserMetadata,
 		SSEConfig:       sseCfg,
+		TraceConfig: s3.TraceConfig{
+			Enable: true,
+		},
 		HTTPConfig: s3.HTTPConfig{
 			IdleConnTimeout:       model.Duration(cfg.HTTP.IdleConnTimeout),
 			ResponseHeaderTimeout: model.Duration(cfg.HTTP.ResponseHeaderTimeout),
